@@ -76,7 +76,7 @@ class DatabaseManager:
         with conn:
             cur = conn.cursor() 
             cur.execute("SELECT * FROM users")
-        return [x[0] for x in cur.fetchall()] 
+            return [x[0] for x in cur.fetchall()] 
         
     def get_prize_img(self, prize_id):
         #Mengambil data image dari tabel prize dimana prize_id = prize_id
@@ -84,7 +84,7 @@ class DatabaseManager:
         with conn:
             cur = conn.cursor() 
             cur.execute("SELECT image FROM prizes WHERE prize_id = ?", (prize_id,))
-        return cur.fetchall()[0][0]
+            return cur.fetchall()[0][0]
 
     def get_random_prize(self):
         #Mendapatkan data image dari table prize dimana used = 0 dan diurutkan secara acak
@@ -92,8 +92,31 @@ class DatabaseManager:
         with conn:
             cur = conn.cursor() 
             cur.execute("SELECT prize_id, image FROM prizes WHERE used = 0 ORDER BY RANDOM() ")
-        return cur.fetchall()[0]
+            return cur.fetchall()[0]
+
+    def get_winners_count(self, prize_id):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute('SELECT count(*) as total_winner FROM winners WHERE prize_id = ?', (prize_id, ))
+            return cur.fetchall()[0][0]
     
+    
+        
+    def get_rating(self):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute('''
+    SELECT users.user_name, COUNT(*) as total_wins
+FROM users
+INNER JOIN winners ON users.user_id = winners.user_id
+GROUP BY users.user_id
+ORDER BY total_wins DESC
+LIMIT 10
+    ''')
+            return cur.fetchall()
+
   
 def hide_img(img_name):
     image = cv2.imread(f'img/{img_name}')
