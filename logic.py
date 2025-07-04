@@ -37,6 +37,7 @@ class DatabaseManager:
         ''')
 
             conn.commit()
+    
 
     def add_user(self, user_id, user_name):
         conn = sqlite3.connect(self.database)
@@ -100,8 +101,6 @@ class DatabaseManager:
             cur = conn.cursor()
             cur.execute('SELECT count(*) as total_winner FROM winners WHERE prize_id = ?', (prize_id, ))
             return cur.fetchall()[0][0]
-    
-    
         
     def get_rating(self):
         conn = sqlite3.connect(self.database)
@@ -116,6 +115,17 @@ ORDER BY total_wins DESC
 LIMIT 10
     ''')
             return cur.fetchall()
+        
+    def get_winners_img(self, user_id):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute(''' 
+SELECT image FROM winners 
+INNER JOIN prizes ON 
+winners.prize_id = prizes.prize_id
+WHERE user_id = ?''', (user_id, ))
+        return cur.fetchall()
 
   
 def hide_img(img_name):
